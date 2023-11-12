@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresentationLayer", "PresentationLayer\PresentationLayer.csproj", "{CA9E22B9-9AB7-48B3-93CC-951D02DE4D58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresentationLayer", "PresentationLayer\PresentationLayer.csproj", "{CA9E22B9-9AB7-48B3-93CC-951D02DE4D58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entity", "Entity\Entity.csproj", "{E03214EB-05AA-42AF-9D1A-2C731568B866}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Entity", "Entity\Entity.csproj", "{E03214EB-05AA-42AF-9D1A-2C731568B866}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataLayer", "DataLayer\DataLayer.csproj", "{86A88175-F860-48E0-8446-FBB9807A2B27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataLayer", "DataLayer\DataLayer.csproj", "{86A88175-F860-48E0-8446-FBB9807A2B27}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model", "Model\Model.csproj", "{226625DB-4793-4B6F-8CD1-C82507701E9F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{86A88175-F860-48E0-8446-FBB9807A2B27}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86A88175-F860-48E0-8446-FBB9807A2B27}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86A88175-F860-48E0-8446-FBB9807A2B27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{226625DB-4793-4B6F-8CD1-C82507701E9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{226625DB-4793-4B6F-8CD1-C82507701E9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{226625DB-4793-4B6F-8CD1-C82507701E9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{226625DB-4793-4B6F-8CD1-C82507701E9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
