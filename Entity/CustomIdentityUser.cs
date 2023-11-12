@@ -9,6 +9,7 @@ namespace Entity
 
         public string LastName { get; set; }
 
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
         public DateTime DateOfBirth { get; set; }
 
         public override string? Email { get; set; }
@@ -29,8 +30,8 @@ namespace Entity
             this.Address = address;
             this.ZipCode = zipCode;
             this.PhoneNumber = phoneNumber;
-
         }
+
 
 
 

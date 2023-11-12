@@ -24,10 +24,7 @@ namespace Entity.EntityConfiguration
             builder.Property(u => u.DateOfBirth)
                 .IsRequired()
                 .HasColumnName("DateOfBirth")
-                .HasColumnType("date")
-                .HasConversion(
-                v => v.ToString("MM/dd/yyyy"),
-                v => DateTime.ParseExact(v, "MM/dd/yyyy", null));
+                .HasColumnType("date");
 
 
             builder.Property(u => u.Email)
