@@ -11,6 +11,12 @@ namespace DataLayer.Repository
         public CustomIdentityUserRepository(DataBaseAppContext baseContext):
             base(baseContext) {}
 
+        public async Task AddAsync(CustomIdentityUser user)
+        {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<ICollection<CustomIdentityUser>> GetByAddressAsync(string address)
         {
             var users = await _context.Users
@@ -93,6 +99,33 @@ namespace DataLayer.Repository
                 .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
             
             return user ?? throw new(nameof(user));
+        }
+
+        public async Task RemoveAsync(CustomIdentityUser user)
+        {
+            var exitedUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == user.Email);
+            
+            if (exitedUser != null)
+            {
+                _context.Users.Remove(exitedUser);
+                await _context.SaveChangesAsync();
+            }
+            else throw new(nameof(user));   
+        }
+        
+
+
+        public async Task UpdateAsync(CustomIdentityUser user)
+        {
+            var exitedUser = await _context.Users
+                .FirstOrDefaultAsync(u=>u.Email == user.Email);
+            if(exitedUser != null)
+            {
+                _context.Users.Update(exitedUser);
+                await _context.SaveChangesAsync();
+            }
+            else throw new(nameof(user)); 
         }
     }
 }
