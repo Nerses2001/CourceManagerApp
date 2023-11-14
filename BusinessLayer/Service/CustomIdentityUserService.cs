@@ -4,7 +4,10 @@ using DataLayer.IRepository;
 using Entity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Model;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace BusinessLayer.Service
@@ -339,7 +342,13 @@ namespace BusinessLayer.Service
                 model.Address,
                 model.ZipCode,
                 model.PhoneNumber,
-                model.Email);
+                model.Email)
+            {
+                AccessToken = Guid.NewGuid().ToString()
+                                            .Replace("+", string.Empty)
+                                            .Replace("=", string.Empty)
+                                            .Replace("/", string.Empty)
+            };
             
             var result = await _userManager.CreateAsync(newUser, model.Password);
             if (result.Succeeded)
@@ -355,11 +364,44 @@ namespace BusinessLayer.Service
             return new UserManagerResponse("SomethingWrong",false,result.Errors.Select(e => e.Description));
 
         }
-        public Task<UserManagerResponse> LoginUserAsync(LoginModel model)
+        public async Task<UserManagerResponse> LoginUserAsync(LoginModel model)
         {
-            throw new NotImplementedException();
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
+                return new UserManagerResponse("InvalidUser", false, new List<string> { "User Not Found" });
+
+            if (!user.EmailConfirmed)
+                return new UserManagerResponse("ActivateEmail", false, new List<string> { "User not EmailConfirmed" });
+            
+            var result = await _userManager.CheckPasswordAsync(user, model.Password);
+            if (!result)
+                return new UserManagerResponse("PasswordInvalid",false, new List<string> { "Invalid Password" });
+            
+            string token = GenerateJwtToken(user);
+            return new UserManagerResponse(token,true);
+
+        }
+        private string GenerateJwtToken(CustomIdentityUser user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[] {
+                    new Claim("id", user.Id),
+                    new Claim(ClaimTypes.Email, user.Email!),
+                    // Replace "access" with the actual claim and value
+                    new Claim("access",  user.AccessToken!)
+                }),
+                Expires = DateTime.UtcNow.AddDays(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
-        
+
     }
 }

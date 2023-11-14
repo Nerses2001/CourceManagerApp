@@ -21,6 +21,7 @@ namespace Entity
 
         [Required]
         public string ZipCode { get; set; }
+        public string? AccessToken { get; set; }
 
         public CustomIdentityUser(string firstName, string lastName, DateTime dateOfBirth, string address, string zipCode, string phoneNumber, string email)
         {
