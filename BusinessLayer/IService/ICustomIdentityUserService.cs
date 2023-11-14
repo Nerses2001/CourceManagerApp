@@ -25,6 +25,7 @@ namespace BusinessLayer.IService
         Task RemoveUserByEmailRemoveAsync(string email);
         Task RemoveUserByPhoneNumberRemoveAsync(string phoneNumber);
 
-
+        Task<UserManagerResponse> LoginUserAsync(LoginModel model);
+        Task<UserManagerResponse> RegisterUserAsync(RegisterModel model);
     }
 }
