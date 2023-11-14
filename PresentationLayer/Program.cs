@@ -1,3 +1,5 @@
+using BusinessLayer.IService;
+using BusinessLayer.Service;
 using DataLayer;
 using DataLayer.IRepository;
 using DataLayer.Repository;
@@ -15,6 +17,7 @@ options.UseSqlServer(
 
 builder.Services.AddScoped<ICustomIdentityUserRepository, CustomIdentityUserRepository>();
 
+builder.Services.AddTransient<ICustomIdentityUserService, CustomIdentityUserService>();
 builder.Services.AddControllers();
 
 builder.Services.AddAutoMapperService();
