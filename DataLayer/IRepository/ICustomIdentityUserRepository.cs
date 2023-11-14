@@ -17,6 +17,7 @@ namespace DataLayer.IRepository
         Task AddAsync(CustomIdentityUser user);
         Task UpdateAsync(CustomIdentityUser user);
         Task RemoveAsync(CustomIdentityUser user);
+        Task<bool> CheackUser(string email,string phoneNumber); 
 
     }
 }

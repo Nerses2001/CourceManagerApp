@@ -2,7 +2,6 @@
 using Entity.EntityConfiguration;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
 
 namespace DataLayer
 {
@@ -11,11 +10,11 @@ namespace DataLayer
         public DataBaseAppContext(DbContextOptions<DataBaseAppContext> options)
             : base(options)
         {
-            Users = Set<CustomIdentityUser>(); 
+         //   Users = Set<CustomIdentityUser>(); 
         }
 
         //    public DbSet<CustomIdentityUser> Users { get; set; }
-
+   
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

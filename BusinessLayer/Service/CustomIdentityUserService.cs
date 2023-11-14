@@ -2,7 +2,13 @@
 using BusinessLayer.IService;
 using DataLayer.IRepository;
 using Entity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Model;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace BusinessLayer.Service
 {
@@ -10,11 +16,18 @@ namespace BusinessLayer.Service
     {
         private readonly IMapper _mapper;
         private readonly ICustomIdentityUserRepository _userRepository;
-
-        public CustomIdentityUserService(ICustomIdentityUserRepository repository, IMapper mapper)
+        private readonly IConfiguration _configuration;
+        private readonly UserManager<CustomIdentityUser> _userManager;
+        public CustomIdentityUserService(
+            ICustomIdentityUserRepository repository,
+            IMapper mapper, 
+            IConfiguration configuration, 
+            UserManager<CustomIdentityUser> userManager)
         {
             this._mapper = mapper;
-            _userRepository = repository;
+            this._userRepository = repository;
+            this._userManager = userManager;
+            this._configuration = configuration;
         }
 
         public void AddUser(CustomIdentityUserDTO user)
@@ -309,15 +322,86 @@ namespace BusinessLayer.Service
             else
                 throw new ArgumentNullException(nameof(existingUser), "User not found");
         }
-
-        public Task<UserManagerResponse> LoginUserAsync(LoginModel model)
+        public async Task<UserManagerResponse> RegisterUserAsync(RegisterModel model)
         {
-            throw new NotImplementedException();
+            if (model == null) 
+                throw new NullReferenceException("NotFound");
+        
+            if(model.Password != model.ConfirmPassword)
+                return new UserManagerResponse("PasswordMissMatch",false, new List<string> { "Passwords do not match." });
+
+            var exitedUser = await _userRepository.CheackUser(model.Email,model.PhoneNumber);
+            
+            if(exitedUser)
+                return new UserManagerResponse("UserExisted", false, new List<string> { "User already Registreated" });
+
+            var newUser = new CustomIdentityUser(
+                model.FirstName,
+                model.LastName,
+                model.DateOfBirth,
+                model.Address,
+                model.ZipCode,
+                model.PhoneNumber,
+                model.Email)
+            {
+                AccessToken = Guid.NewGuid().ToString()
+                                            .Replace("+", string.Empty)
+                                            .Replace("=", string.Empty)
+                                            .Replace("/", string.Empty)
+            };
+            
+            var result = await _userManager.CreateAsync(newUser, model.Password);
+            if (result.Succeeded)
+            {
+                //var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                //    var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+                //  var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
+                var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+                var validEmailToken = Convert.ToBase64String(encodedEmailToken);
+                return new UserManagerResponse("User created successfully!", true);
+            }
+            return new UserManagerResponse("SomethingWrong",false,result.Errors.Select(e => e.Description));
+
+        }
+        public async Task<UserManagerResponse> LoginUserAsync(LoginModel model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
+                return new UserManagerResponse("InvalidUser", false, new List<string> { "User Not Found" });
+
+            if (!user.EmailConfirmed)
+                return new UserManagerResponse("ActivateEmail", false, new List<string> { "User not EmailConfirmed" });
+            
+            var result = await _userManager.CheckPasswordAsync(user, model.Password);
+            if (!result)
+                return new UserManagerResponse("PasswordInvalid",false, new List<string> { "Invalid Password" });
+            
+            string token = GenerateJwtToken(user);
+            return new UserManagerResponse(token,true);
+
+        }
+        private string GenerateJwtToken(CustomIdentityUser user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[] {
+                    new Claim("id", user.Id),
+                    new Claim(ClaimTypes.Email, user.Email!),
+                    // Replace "access" with the actual claim and value
+                    new Claim("access",  user.AccessToken!)
+                }),
+                Expires = DateTime.UtcNow.AddDays(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
-        public Task<UserManagerResponse> RegisterUserAsync(RegisterModel model)
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }

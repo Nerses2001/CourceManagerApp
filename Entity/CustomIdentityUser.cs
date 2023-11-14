@@ -21,8 +21,9 @@ namespace Entity
 
         [Required]
         public string ZipCode { get; set; }
+        public string? AccessToken { get; set; }
 
-        public CustomIdentityUser(string firstName, string lastName, DateTime dateOfBirth, string address, string zipCode, string phoneNumber)
+        public CustomIdentityUser(string firstName, string lastName, DateTime dateOfBirth, string address, string zipCode, string phoneNumber, string email)
         {
             this.FirstName = firstName;
             this.LastName = lastName;
@@ -30,6 +31,8 @@ namespace Entity
             this.Address = address;
             this.ZipCode = zipCode;
             this.PhoneNumber = phoneNumber;
+            this.Email = email;
+            
         }
 
 
