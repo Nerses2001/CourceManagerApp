@@ -2,7 +2,10 @@
 using BusinessLayer.IService;
 using DataLayer.IRepository;
 using Entity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Model;
+using System.Text;
 
 namespace BusinessLayer.Service
 {
@@ -10,11 +13,18 @@ namespace BusinessLayer.Service
     {
         private readonly IMapper _mapper;
         private readonly ICustomIdentityUserRepository _userRepository;
-
-        public CustomIdentityUserService(ICustomIdentityUserRepository repository, IMapper mapper)
+        private readonly IConfiguration _configuration;
+        private readonly UserManager<CustomIdentityUser> _userManager;
+        public CustomIdentityUserService(
+            ICustomIdentityUserRepository repository,
+            IMapper mapper, 
+            IConfiguration configuration, 
+            UserManager<CustomIdentityUser> userManager)
         {
             this._mapper = mapper;
-            _userRepository = repository;
+            this._userRepository = repository;
+            this._userManager = userManager;
+            this._configuration = configuration;
         }
 
         public void AddUser(CustomIdentityUserDTO user)
@@ -309,15 +319,47 @@ namespace BusinessLayer.Service
             else
                 throw new ArgumentNullException(nameof(existingUser), "User not found");
         }
+        public async Task<UserManagerResponse> RegisterUserAsync(RegisterModel model)
+        {
+            if (model == null) 
+                throw new NullReferenceException("NotFound");
+        
+            if(model.Password != model.ConfirmPassword)
+                return new UserManagerResponse("PasswordMissMatch",false, new List<string> { "Passwords do not match." });
 
+            var exitedUser = await _userRepository.CheackUser(model.Email,model.PhoneNumber);
+            
+            if(exitedUser)
+                return new UserManagerResponse("UserExisted", false, new List<string> { "User already Registreated" });
+
+            var newUser = new CustomIdentityUser(
+                model.FirstName,
+                model.LastName,
+                model.DateOfBirth,
+                model.Address,
+                model.ZipCode,
+                model.PhoneNumber,
+                model.Email);
+            
+            var result = await _userManager.CreateAsync(newUser, model.Password);
+            if (result.Succeeded)
+            {
+                //var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                //    var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+                //  var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
+                var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+                var validEmailToken = Convert.ToBase64String(encodedEmailToken);
+                return new UserManagerResponse("User created successfully!", true);
+            }
+            return new UserManagerResponse("SomethingWrong",false,result.Errors.Select(e => e.Description));
+
+        }
         public Task<UserManagerResponse> LoginUserAsync(LoginModel model)
         {
             throw new NotImplementedException();
         }
 
-        public Task<UserManagerResponse> RegisterUserAsync(RegisterModel model)
-        {
-            throw new NotImplementedException();
-        }
+        
     }
 }

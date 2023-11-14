@@ -17,6 +17,13 @@ namespace DataLayer.Repository
             await _context.SaveChangesAsync();
         }
 
+        public async Task<bool> CheackUser(string email, string phoneNumber)
+        {
+            var userWithEmail = await _context.Users.AnyAsync(u => u.Email == email);
+            var userWithPhoneNumber = await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber);
+            return userWithEmail || userWithPhoneNumber;
+        }
+
         public async Task<ICollection<CustomIdentityUser>> GetByAddressAsync(string address)
         {
             var users = await _context.Users
