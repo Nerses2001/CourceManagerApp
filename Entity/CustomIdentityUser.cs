@@ -5,8 +5,9 @@ namespace Entity
 {
     public class CustomIdentityUser : IdentityUser
     {
+        [MinLength(3)]
         public string FirstName { get; set; }
-
+        [MinLength(3)]
         public string LastName { get; set; }
 
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]

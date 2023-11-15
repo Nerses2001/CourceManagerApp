@@ -17,6 +17,11 @@ namespace PresentationLayer.Controllers
             this._userService = service;
         }
 
+        /// <summary>
+        /// Register New Account
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost("/Auth/Register")]
         [ProducesResponseType(typeof(UserManagerResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(UserManagerResponse), StatusCodes.Status400BadRequest)]
@@ -35,11 +40,41 @@ namespace PresentationLayer.Controllers
                 else
                 {
                     var response = await _userService.RegisterUserAsync(model);
-                    if (response != null)
+                    if (response.IsSuccess)
                         result = Ok(response);
                     else
                         result = BadRequest(response);
                 }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Login to Account
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost("/Auth/Login")]
+        [ProducesResponseType(typeof(UserManagerResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(UserManagerResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        public async Task<ActionResult<UserManagerResponse>> LoginAsync([FromBody] LoginModel model) 
+        {
+            try
+            {
+                ActionResult<UserManagerResponse> result;
+
+                var response = await _userService.LoginUserAsync(model);
+
+                if (response.IsSuccess)
+                    result = Ok(response);
+                else
+                    result = BadRequest(response);
+
                 return result;
             }
             catch (Exception ex)

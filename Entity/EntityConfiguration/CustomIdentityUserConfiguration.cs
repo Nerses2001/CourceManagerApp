@@ -11,15 +11,14 @@ namespace Entity.EntityConfiguration
             builder.Property(u => u.FirstName)
                 .IsRequired()
                 .HasMaxLength(100)  // Adjust the maximum length as needed
-                .HasColumnName("FirstName")
-                .HasMaxLength(3);
+                .HasColumnName("FirstName");
+                //.HasMaxLength(3);
 
 
             builder.Property(u => u.LastName)
                 .IsRequired()
                 .HasMaxLength(100) // Adjust the maximum length as needed
-                .HasColumnName("LastName")
-                .HasMaxLength(3);
+                .HasColumnName("LastName");
 
             builder.Property(u => u.DateOfBirth)
                 .IsRequired()

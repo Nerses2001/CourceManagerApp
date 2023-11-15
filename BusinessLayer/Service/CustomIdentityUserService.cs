@@ -335,7 +335,7 @@ namespace BusinessLayer.Service
             if(exitedUser)
                 return new UserManagerResponse("UserExisted", false, new List<string> { "User already Registreated" });
 
-            var newUser = new CustomIdentityUser(
+            var user = new CustomIdentityUser(
                 model.FirstName,
                 model.LastName,
                 model.DateOfBirth,
@@ -347,19 +347,24 @@ namespace BusinessLayer.Service
                 AccessToken = Guid.NewGuid().ToString()
                                             .Replace("+", string.Empty)
                                             .Replace("=", string.Empty)
-                                            .Replace("/", string.Empty)
+                                            .Replace("/", string.Empty),
+                UserName = model.Email,
             };
             
-            var result = await _userManager.CreateAsync(newUser, model.Password);
+            var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                //var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                //var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 //    var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
                 //  var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
-                var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
                 var validEmailToken = Convert.ToBase64String(encodedEmailToken);
                 return new UserManagerResponse("User created successfully!", true);
+            }
+            foreach (var error in result.Errors)
+            {
+                Console.WriteLine($"Error: {error.Code}, Description: {error.Description}");
             }
             return new UserManagerResponse("SomethingWrong",false,result.Errors.Select(e => e.Description));
 
@@ -367,7 +372,8 @@ namespace BusinessLayer.Service
         public async Task<UserManagerResponse> LoginUserAsync(LoginModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
-
+            var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            await _userManager.ConfirmEmailAsync(user, emailConfirmationToken);
             if (user == null)
                 return new UserManagerResponse("InvalidUser", false, new List<string> { "User Not Found" });
 
@@ -375,7 +381,7 @@ namespace BusinessLayer.Service
                 return new UserManagerResponse("ActivateEmail", false, new List<string> { "User not EmailConfirmed" });
             
             var result = await _userManager.CheckPasswordAsync(user, model.Password);
-            if (!result)
+            if (result == false)
                 return new UserManagerResponse("PasswordInvalid",false, new List<string> { "Invalid Password" });
             
             string token = GenerateJwtToken(user);
